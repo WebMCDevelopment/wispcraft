@@ -1,7 +1,9 @@
 import { deviceCodeAuth, getProfile, minecraftAuth } from "./auth";
 import { reconnect, set_wisp_server } from "./connection/epoxy";
-import { authstore, TokenStore } from ".";
+import { authstore, DEFAULT_WISP_URL, TokenStore, wispUrl } from ".";
 import encodeQR from "qr";
+// @ts-ignore
+import workshop from "./img/workshop.png";
 
 let keydownListeners: Array<EventListenerOrEventListenerObject> = [];
 const nativeAddEventListener = window.addEventListener;
@@ -253,7 +255,6 @@ export function createUI() {
                 width: 148px;
                 height: 148px;
                 transition: all 0.2s ease;
-                cursor: none;
             }
 
             .settings-ui #account_status svg:hover {
@@ -291,7 +292,7 @@ export function createUI() {
         <div class="settings-ui hidden" id="settings_ui">
             <div class="header">
                 <div class="side">
-                    <img src="https://avatars.githubusercontent.com/u/116328501">
+                    <img src="${workshop}">
                     <h1>Wispcraft</h1>
                 </div>
 
@@ -308,7 +309,7 @@ export function createUI() {
             <div class="content shown" id="settings">
                 <div class="setting">
                     <p>Wisp Server</p>
-                    <input class="input" id="wisp_url" placeholder="wss://anura.pro/" />
+                    <input class="input" id="wisp_url" placeholder="${DEFAULT_WISP_URL}" value="${wispUrl}" />
                     <p id="save_status"><br /></p>
                     <p>Microsoft Accounts</p>
                     <select name="accounts" id="account_select" class="select">

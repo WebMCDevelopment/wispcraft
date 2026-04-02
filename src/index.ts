@@ -7,6 +7,8 @@ export const VERSION = self.VERSION;
 //@ts-expect-error this too
 export const COMMITHASH = self.COMMITHASH;
 
+export const DEFAULT_WISP_URL = "wss://anura.pro/";
+
 export let wispUrl: string;
 
 export type AuthStore = {
@@ -41,7 +43,7 @@ wispUrl =
 	((window as any).anura && (window as any).anura.wsproxyURL) ||
 	new URL(window.location.href).searchParams.get("wisp") ||
 	localStorage["wispcraft_wispurl"] ||
-	"wss://anura.pro/";
+	DEFAULT_WISP_URL;
 
 try {
 	setWispUrl(wispUrl);
