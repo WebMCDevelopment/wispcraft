@@ -23,6 +23,11 @@ enum State {
 	Play = 0x03,
 }
 
+enum PacketType {
+	SERVERBOUND,
+	CLIENTBOUND
+}
+
 // EAG_ prefixed are nonstandard
 enum Serverbound {
 	/* ==HANDSHAKING== */
@@ -38,7 +43,15 @@ enum Serverbound {
 	LoginStart = 0x00,
 	EncryptionResponse = 0x01,
 	/* ==PLAY== */
+	PluginMessage = -0x00,
+}
+
+enum Serverbound_1_8 {
 	PluginMessage = 0x17,
+}
+
+enum Serverbound_1_12 {
+	PluginMessage = 0x09,
 }
 
 enum Clientbound {
@@ -57,7 +70,15 @@ enum Clientbound {
 	SetCompression = 0x03,
 	/* ==PLAY== */
 	SetCompressionPlay = 0x46,
+	PluginMessage = -0x00,
+}
+
+enum Clientbound_1_8 {
 	PluginMessage = 0x3f,
+}
+
+enum Clientbound_1_12 {
+	PluginMessage = 0x18,
 }
 
 class Packet extends Buffer {
@@ -128,6 +149,26 @@ function createProtocolArray(pvn: number): number[] {
 		return [0, pvn];
 	} else {
 		return [(pvn >> 8) & 0xff, pvn & 0xff];
+	}
+}
+
+function getVersionPluginMessage(protocol: number, type: PacketType): number {
+	if (type == PacketType.SERVERBOUND) {
+		if (protocol == 47) {
+			return Serverbound_1_8.PluginMessage;
+		} else if (protocol == 340) {
+			return Serverbound_1_12.PluginMessage;
+		} else {
+			return Serverbound.PluginMessage
+		}
+	} else {
+		if (protocol == 47) {
+			return Clientbound_1_8.PluginMessage;
+		} else if (protocol == 340) {
+			return Clientbound_1_12.PluginMessage;
+		} else {
+			return Clientbound.PluginMessage
+		}
 	}
 }
 
@@ -236,7 +277,7 @@ export class EaglerProxy {
 			case State.Play:
 				let pk = packet.readVarInt(false)!;
 				switch (pk) {
-					case Serverbound.PluginMessage:
+					case getVersionPluginMessage(this.protocol, PacketType.SERVERBOUND):
 						let fard = packet.copy();
 						fard.readVarInt();
 						let tag = fard.readString();
@@ -248,7 +289,7 @@ export class EaglerProxy {
 									if (buf.length == 0) {
 										return;
 									}
-									let resp = new Packet(Clientbound.PluginMessage);
+									let resp = new Packet(getVersionPluginMessage(this.protocol, PacketType.CLIENTBOUND));
 									resp.writeString(tag);
 									resp.extend(buf);
 									this.eagler.write(resp);
@@ -407,12 +448,14 @@ export class EaglerProxy {
 			case State.Play:
 				switch (packet.readVarInt(false)) {
 					case Clientbound.SetCompressionPlay:
-						packet.readVarInt();
-						let threshold = packet.readVarInt();
-						this.decompressor.compressionThresh = threshold;
-						this.compressor.compressionThresh = threshold;
-						break;
-					case Clientbound.PluginMessage:
+						if (this.protocol <= 47) {
+							packet.readVarInt();
+							let threshold = packet.readVarInt();
+							this.decompressor.compressionThresh = threshold;
+							this.compressor.compressionThresh = threshold;
+							break;
+						}
+					case getVersionPluginMessage(this.protocol, PacketType.CLIENTBOUND):
 						let pk = packet.copy();
 						pk.readVarInt();
 						let tag = pk.readString();
