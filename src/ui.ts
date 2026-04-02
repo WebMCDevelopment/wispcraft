@@ -302,6 +302,10 @@ export function createUI() {
                     <img src="${workshop}">
                     <h1>Wispcraft</h1>
                 </div>
+
+                <div class="side" style="padding-right:1rem;color:rgba(248,250,252,0.8);">
+                    <svg id="close" onclick="document.querySelector('.settings-ui').classList.add('hidden');document.querySelector('.backdrop-blur').classList.add('hidden');" xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </div>
             </div>
 
             <div class="tabs">
