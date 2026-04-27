@@ -1,6 +1,7 @@
 import { getProfile, minecraftAuth, UserInfo } from "./auth";
 import { epoxyFetch, initWisp } from "./connection/epoxy";
 import { makeFakeWebSocket } from "./connection/fakewebsocket";
+import { showUI } from "./ui";
 
 //@ts-expect-error this gets filled in by rollup
 export const VERSION = self.VERSION;
@@ -72,6 +73,11 @@ if (localStorage["wispcraft_accounts"]) {
 		})();
 	}
 }
+
+Object.defineProperty(window, "wispcraftShowSettingsUI", {
+  value: showUI,
+  writable: false
+});
 
 // replace websocket with our own
 window.WebSocket = makeFakeWebSocket();
