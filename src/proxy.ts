@@ -24,8 +24,8 @@ enum State {
 }
 
 enum PacketType {
-	SERVERBOUND,
-	CLIENTBOUND
+	Clientbound,
+	Serverbound
 }
 
 // EAG_ prefixed are nonstandard
@@ -152,22 +152,22 @@ function createProtocolArray(pvn: number): number[] {
 	}
 }
 
-function getVersionPluginMessage(protocol: number, type: PacketType): number {
-	if (type == PacketType.SERVERBOUND) {
+function getVersionPacketId(protocol: number, type: PacketType, packet: string): number {
+	if (type == PacketType.Serverbound) {
 		if (protocol == 47) {
-			return Serverbound_1_8.PluginMessage;
+			return Serverbound_1_8[packet];
 		} else if (protocol == 340) {
-			return Serverbound_1_12.PluginMessage;
+			return Serverbound_1_12[packet];
 		} else {
-			return Serverbound.PluginMessage
+			return Serverbound[packet]
 		}
 	} else {
 		if (protocol == 47) {
-			return Clientbound_1_8.PluginMessage;
+			return Clientbound_1_8[packet];
 		} else if (protocol == 340) {
-			return Clientbound_1_12.PluginMessage;
+			return Clientbound_1_12[packet];
 		} else {
-			return Clientbound.PluginMessage
+			return Clientbound[packet]
 		}
 	}
 }
@@ -277,7 +277,7 @@ export class EaglerProxy {
 			case State.Play:
 				let pk = packet.readVarInt(false)!;
 				switch (pk) {
-					case getVersionPluginMessage(this.protocol, PacketType.SERVERBOUND):
+					case getVersionPacketId(this.protocol, PacketType.Serverbound, "PluginMessage"):
 						let fard = packet.copy();
 						fard.readVarInt();
 						let tag = fard.readString();
@@ -289,7 +289,7 @@ export class EaglerProxy {
 									if (buf.length == 0) {
 										return;
 									}
-									let resp = new Packet(getVersionPluginMessage(this.protocol, PacketType.CLIENTBOUND));
+									let resp = new Packet(getVersionPacketId(this.protocol, PacketType.Clientbound, "PluginMessage"));
 									resp.writeString(tag);
 									resp.extend(buf);
 									this.eagler.write(resp);
@@ -448,14 +448,14 @@ export class EaglerProxy {
 			case State.Play:
 				switch (packet.readVarInt(false)) {
 					case Clientbound.SetCompressionPlay:
-						if (this.protocol <= 47) {
+						if (this.protocol == 47) {
 							packet.readVarInt();
 							let threshold = packet.readVarInt();
 							this.decompressor.compressionThresh = threshold;
 							this.compressor.compressionThresh = threshold;
 							break;
 						}
-					case getVersionPluginMessage(this.protocol, PacketType.CLIENTBOUND):
+					case getVersionPacketId(this.protocol, PacketType.Clientbound, "PluginMessage"):
 						let pk = packet.copy();
 						pk.readVarInt();
 						let tag = pk.readString();
