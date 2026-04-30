@@ -1,6 +1,6 @@
 import { deviceCodeAuth, getProfile, minecraftAuth } from "./auth";
 import { reconnect, set_wisp_server } from "./connection/epoxy";
-import { authstore, DEFAULT_WISP_URL, TokenStore, wispUrl } from ".";
+import { authstore, DEFAULT_WISP_URL, getLastUsedAccount, getLoggedInAccounts, TokenStore, wispUrl } from ".";
 import encodeQR from "qr";
 // @ts-ignore
 import workshop from "./img/workshop.png";
@@ -387,15 +387,15 @@ export function createUI() {
 	}
 
 	if (localStorage["wispcraft_accounts"]) {
-		const accounts = JSON.parse(
-			localStorage["wispcraft_accounts"]
-		) as TokenStore[];
-		for (const account of accounts) {
-			const option = document.createElement("option");
-			option.value = account.username;
-			option.innerText = account.username;
-			accountSelect.add(option);
-		}
+        const accounts = getLoggedInAccounts();
+        if (accounts) {
+            for (const account of accounts) {
+                const option = document.createElement("option");
+                option.value = account.username;
+                option.innerText = account.username;
+                accountSelect.add(option);
+            }
+        }
 	}
 
 	if (localStorage["wispcraft_last_used_account"]) {
@@ -467,12 +467,7 @@ export function createUI() {
 			removeButton.disabled = true;
 			return;
 		}
-		const accounts = JSON.parse(
-			localStorage["wispcraft_accounts"]
-		) as TokenStore[];
-		const account = accounts.find(
-			(account) => account.username === accountSelect.value
-		);
+		const account = getLastUsedAccount();
 		if (account) {
 			try {
 				try {

@@ -52,14 +52,27 @@ try {
 	console.error(e);
 }
 
+export function getLoggedInAccounts (): TokenStore[] | undefined {
+	const accounts = localStorage["wispcraft_accounts"];
+	if (accounts) {
+		return JSON.parse(accounts) as TokenStore[];
+	} else {
+		return undefined;
+	}
+}
+
+export function getLastUsedAccount (): TokenStore | undefined {
+	const username = localStorage["wispcraft_last_used_account"];
+	const accounts = getLoggedInAccounts();
+	if (username && accounts) {
+		return accounts.find((account) => account.username === username);
+	} else {
+		return undefined;
+	}
+}
+
 if (localStorage["wispcraft_accounts"]) {
-	const accounts = JSON.parse(
-		localStorage["wispcraft_accounts"]
-	) as TokenStore[];
-	const account = accounts.find(
-		(account) =>
-			account.username === localStorage["wispcraft_last_used_account"]
-	);
+	const account = getLastUsedAccount();
 	if (account) {
 		(async () => {
 			try {
@@ -74,12 +87,7 @@ if (localStorage["wispcraft_accounts"]) {
 	}
 }
 
-Object.defineProperty(window, "wispcraftAPI", {
-  value: {
-		showSettingsUI: showUI
-	},
-  writable: false
-});
+export const showSettingsUI = showUI;
 
 // replace websocket with our own
 window.WebSocket = makeFakeWebSocket();
