@@ -1,4 +1,4 @@
-import { deviceCodeAuth, getProfile, minecraftAuth } from "./auth";
+import { deviceCodeAuth, getAuthCodeResponse, getProfile, minecraftAuth } from "./auth";
 import { reconnect, set_wisp_server } from "./connection/epoxy";
 import { authstore, DEFAULT_WISP_URL, getLastUsedAccount, getLoggedInAccounts, TokenStore, wispUrl } from ".";
 import encodeQR from "qr";
@@ -519,13 +519,8 @@ export function createUI() {
 	addButton.onclick = async () => {
 		try {
 			addButton.disabled = true;
-			const codeGenerator = await deviceCodeAuth();
-			const linkUrl = "https://microsoft.com/link?otc=" + codeGenerator.code;
-			const qrSvg = encodeQR(linkUrl, "svg", {
-				scale: 6,
-				border: 1,
-			});
-			accountStatus.innerHTML = `Scan QR Code or click <a id="mslink" href="javascript:void(0)" target="_blank">this link</a> and use code <input id="auth_code" class="input" style="width:8em;text-align:center;" type="text" readonly value="${codeGenerator.code}" /> for logging in.<br /><br />${qrSvg}<br />`;
+			const res = await getAuthCodeResponse();
+			accountStatus.innerHTML = `Scan QR Code or click <a id="mslink" href="javascript:void(0)" target="_blank">this link</a> and use code <input id="auth_code" class="input" style="width:8em;text-align:center;" type="text" readonly value="${res.code}" /> for logging in.<br /><br />${res.qr_svg}<br />`;
 			const authCodeBox = document.querySelector(
 				"#auth_code"
 			) as HTMLInputElement;
@@ -537,14 +532,14 @@ export function createUI() {
 
 			accountStatus.querySelector<HTMLAnchorElement>("#mslink")!.onclick =
 				async () => {
-					const auth = window.open(linkUrl, "", "height=500,width=350");
-					await codeGenerator.token;
+					const auth = window.open(res.link_url, "", "height=500,width=350");
+					await res.token;
 					auth?.close();
 				};
-			await codeGenerator.token;
+			await res.token;
 			accountStatus.innerHTML = "Authenticating...";
 
-			const token = await codeGenerator.token;
+			const token = await res.token;
 			authstore.msToken = token;
 			authstore.yggToken = await minecraftAuth(authstore.msToken);
 			authstore.user = await getProfile(authstore.yggToken);

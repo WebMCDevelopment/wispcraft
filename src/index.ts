@@ -1,4 +1,4 @@
-import { getProfile, minecraftAuth, UserInfo } from "./auth";
+import { getAuthCodeResponse, getProfile, minecraftAuth, UserInfo } from "./auth";
 import { epoxyFetch, initWisp } from "./connection/epoxy";
 import { makeFakeWebSocket } from "./connection/fakewebsocket";
 import { showUI } from "./ui";
@@ -88,6 +88,7 @@ if (localStorage["wispcraft_accounts"]) {
 }
 
 export const showSettingsUI = showUI;
+export const getAuthCode = getAuthCodeResponse;
 
 // replace websocket with our own
 window.WebSocket = makeFakeWebSocket();
