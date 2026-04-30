@@ -74,8 +74,10 @@ if (localStorage["wispcraft_accounts"]) {
 	}
 }
 
-Object.defineProperty(window, "wispcraftShowSettingsUI", {
-  value: showUI,
+Object.defineProperty(window, "wispcraftAPI", {
+  value: {
+		showSettingsUI: showUI
+	},
   writable: false
 });
 
